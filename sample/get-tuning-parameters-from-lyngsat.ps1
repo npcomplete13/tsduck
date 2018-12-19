@@ -1,4 +1,4 @@
-﻿#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2018, Thierry Lelegard
@@ -122,8 +122,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 
             $fields = -split $desc
             $freq = $fields[0]
-            $polarity = $fields[1]
-            $system = "DVB-S"
+            $system = "DVBS"
             $modulation = "QPSK"
             $symbols = $null
             $fec = $null
@@ -134,9 +133,21 @@ function ParseLyngSat([string] $url, [string] $outFile)
                 if ($text -ilike '*DVB-S2*') {
                     $system = "DVB-S2"
                 }
+                if ($fields[1] -ilike 'H') {
+                    $polarity = "HORIZONTAL"
+                }
+                if ($fields[1] -ilike 'L') {
+                    $polarity = "LEFT"
+                }
+                if ($fields[1] -ilike 'R') {
+                    $polarity = "RIGHT"
+                }
+                if ($fields[1] -ilike 'V') {
+                    $polarity = "VERTICAL"
+                }
                 if ($text -ilike '*8PSK*') {
-                    $system = "DVB-S2"
-                    $modulation = "8-PSK"
+                    $system = "DVBS"
+                    $modulation = "PSK/8"
                 }
                 if ($text -match '^\d+-\d+/\d+.*') {
                     $fields = $text -split '[\s-]'
@@ -145,17 +156,23 @@ function ParseLyngSat([string] $url, [string] $outFile)
                 }
             }
 
-            # Check if we found all parameters.
             if ($symbols -and $fec) {
                 $line = "--frequency ${freq}000000 --polarity $polarity --symbol-rate ${symbols}000 --fec $fec --delivery $system --modulation $modulation"
-                $output += $line
+                $output += "[CHANNEL]"
+                $output += "        DELIVERY_SYSTEM = DVBS"
+                $output += "        FREQUENCY = ${freq}000000"
+                $output += "        POLARIZATION = LEFT"
+                $output += "        SYMBOL_RATE = ${symbols}000"
+                $output += "        INNER_FEC = $fec"
+                $output += "        MODULATION = $modulation"
+                $output += "        INVERSION = AUTO"
                 Write-Output "${desc}: $line"
             }
         }
     }
 
     # Now create the file.
-    Write-Output "Found $($output.Count) transponders, writing $outFile"
+    Write-Output "Found $($output.Count/8) transponders, writing $outFile"
     $output | Set-Content $outFile
 }
 
