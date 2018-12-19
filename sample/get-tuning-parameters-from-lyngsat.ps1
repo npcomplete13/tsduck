@@ -161,7 +161,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
                 $output += "[CHANNEL]"
                 $output += "        DELIVERY_SYSTEM = DVBS"
                 $output += "        FREQUENCY = ${freq}000000"
-                $output += "        POLARIZATION = LEFT"
+                $output += "        POLARIZATION = $polarity"
                 $output += "        SYMBOL_RATE = ${symbols}000"
                 $output += "        INNER_FEC = $fec"
                 $output += "        MODULATION = $modulation"
