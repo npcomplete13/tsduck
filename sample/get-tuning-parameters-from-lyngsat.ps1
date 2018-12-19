@@ -118,7 +118,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
         $desc = ElementText $col
 
         # Get if the text matches "frequence polarity"
-        if ($desc -match '\d+ [HV] .*') {
+        if ($desc -match '\d+ [HLRV] .*') {
 
             $fields = -split $desc
             $freq = $fields[0]
