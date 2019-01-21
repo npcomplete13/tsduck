@@ -104,6 +104,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 {
     # An array containing all lines of the output file.
     $output = @()
+    $set = @{}
 
     # Fetch the Web page.
     Write-Output "Fetching $url"
@@ -152,22 +153,25 @@ function ParseLyngSat([string] $url, [string] $outFile)
                 if ($text -match '^\d+-\d+/\d+.*') {
                     $fields = $text -split '[\s-]'
                     $symbols = $fields[0]
-                    $fec = $fields[1]
+                    $fec = $fields[1].split('/')[0] + [System.String]::Format("{0:X}",$fields[1].split('/')[1])
                 }
             }
 
             if ($symbols -and $fec) {
-                $line = "--frequency ${freq}000000 --polarity $polarity --symbol-rate ${symbols}000 --fec $fec --delivery $system --modulation $modulation"
-                #$output += "[CHANNEL]"
-                #$output += "        DELIVERY_SYSTEM = DVBS"
-                #$output += "        FREQUENCY = ${freq}000"
-                #$output += "        POLARIZATION = $polarity"
-                #$output += "        SYMBOL_RATE = ${symbols}000"
-                #$output += "        INNER_FEC = $fec"
-                #$output += "        MODULATION = $modulation"
-                #$output += "        INVERSION = AUTO"
-                $output += "$($output.Count+1)=${freq},$polarity,${symbols}"
-                Write-Output "${desc}: $line"
+                if (!$set.Contains(${freq})) {
+                    $line = "--frequency ${freq}000000 --polarity $polarity --symbol-rate ${symbols}000 --fec $fec --delivery $system --modulation $modulation"
+                    #$output += "[CHANNEL]"
+                    #$output += "        DELIVERY_SYSTEM = DVBS"
+                    #$output += "        FREQUENCY = ${freq}000"
+                    #$output += "        POLARIZATION = $polarity"
+                    #$output += "        SYMBOL_RATE = ${symbols}000"
+                    #$output += "        INNER_FEC = $fec"
+                    #$output += "        MODULATION = $modulation"
+                    #$output += "        INVERSION = AUTO"
+                    $output += "$($output.Count+1)=${freq},$polarity,${symbols},${fec}"
+                    Write-Output "${desc}: $line"
+                    $set.Add(${freq},${freq})
+                }
             }
         }
     }
